@@ -35,6 +35,10 @@ config.config_fp = __file__
 if config.alias is None:
     config.alias = config.path.split('/')[-1].split('.')[0]
 
+# Saving intermediary images  
+config.save_intermediary_images = True
+config.save_images_interval = 800
+
 config.task = 'image'
 config.workspace = f'log/img'
 config.test = False

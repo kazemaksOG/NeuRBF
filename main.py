@@ -199,7 +199,8 @@ def main(opt):
 
     print('Set up trainer')
     trainer = utils.Trainer(opt.exp_name, model, hparams=opt, workspace=opt.workspace, criterion=criterion,
-        ema_decay=opt.ema_decay, fp16=opt.fp16, use_checkpoint='scratch', eval_interval=eval_interval, local_rank=0)
+        ema_decay=opt.ema_decay, fp16=opt.fp16, use_checkpoint='scratch', eval_interval=eval_interval, local_rank=0,
+        save_intermediary_images=opt.save_intermediary_images, save_images_interval=opt.save_images_interval)
 
     # Train
     trainer.train(train_loader, valid_loader, max_steps=max_steps)

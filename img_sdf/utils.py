@@ -63,6 +63,8 @@ class Trainer(object):
                  use_checkpoint="scratch", # which ckpt to use at init time
                  use_tensorboardX=True, # whether to use tensorboard for logging
                  scheduler_update_every_step=True, # whether to call scheduler.step() after every train step
+                 save_intermediary_images=False, 
+                 save_images_interval = 800
                  ):
         self.name = name
         self.hparams = hparams
@@ -119,6 +121,9 @@ class Trainer(object):
                 self.log("[INFO] Training from scratch ...")
             else:
                 raise NotImplementedError
+        
+        self.save_intermediary_images = save_intermediary_images
+        self.save_images_interval = save_images_interval
 
     def __del__(self):
         if hasattr(self, 'log_ptr') and self.log_ptr:
@@ -286,6 +291,10 @@ class Trainer(object):
                     metrics_str = f"psnr={self.train_metrics['psnr']:.4f}"
                 
                 pbar.set_description(f"Epoch {self.epoch}/{self.max_epochs} training: loss={loss_val:.6f} ({loss_avg:.6f}), {metrics_str}, lr_dec={self.optims['dec'].param_groups[0]['lr']:.6f}")
+                
+                if self.save_intermediary_images and self.global_step % self.save_images_interval == 0:
+                    self.save_img(preds, save_path=os.path.join(self.workspace, 'training', f'{self.name}_{self.epoch}_{self.global_step}.png'))
+                
                 pbar.update(1)
 
         if not self.scheduler_update_every_step:
