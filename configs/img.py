@@ -37,7 +37,7 @@ if config.alias is None:
 
 # Saving intermediary images  
 config.save_intermediary_images = True
-config.save_images_interval = 800
+config.save_images_interval = 50
 
 config.task = 'image'
 config.workspace = f'log/img'

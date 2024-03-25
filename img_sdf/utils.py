@@ -215,6 +215,13 @@ class Trainer(object):
             if self.epoch % self.eval_interval == 0 or self.epoch == self.max_epochs:
                 self.pred_latest = self.evaluate_one_epoch(valid_loader)
 
+            # Save image every 10th epoch
+            if self.hparams.record_training and (epoch % self.save_images_interval == 0 or epoch == self.max_epochs):
+                save_dir = os.path.join(self.workspace, 'training', f'{self.name}_{epoch}_{self.global_step}')
+                os.makedirs(os.path.dirname(save_dir), exist_ok=True)
+                save_fn = f'{save_dir}.png'
+                iio.imwrite(save_fn, (self.pred_latest.clip(self.hparams.vmin, self.hparams.vmax).detach().cpu().numpy() * 255).astype(np.uint8))
+
         if self.local_rank == 0:
             pbar.close()
             if self.use_tensorboardX:
@@ -291,10 +298,6 @@ class Trainer(object):
                     metrics_str = f"psnr={self.train_metrics['psnr']:.4f}"
                 
                 pbar.set_description(f"Epoch {self.epoch}/{self.max_epochs} training: loss={loss_val:.6f} ({loss_avg:.6f}), {metrics_str}, lr_dec={self.optims['dec'].param_groups[0]['lr']:.6f}")
-                
-                if self.save_intermediary_images and self.global_step % self.save_images_interval == 0:
-                    self.save_img(preds, save_path=os.path.join(self.workspace, 'training', f'{self.name}_{self.epoch}_{self.global_step}.png'))
-                
                 pbar.update(1)
 
         if not self.scheduler_update_every_step:
