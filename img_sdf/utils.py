@@ -200,7 +200,7 @@ class Trainer(object):
             self.pred_latest = self.evaluate_one_epoch(valid_loader)
 
         # Save initial pred
-        if self.hparams.record_training:
+        if self.hparams.record_training or self.save_intermediary_images:
             pred_latest = self.evaluate_one_epoch(valid_loader, val_metric_list=['psnr', 'mae', 'mse', 'ssim_ski', 'lpips_alex'], full=False)
             self.val_metrics_proc = {k: [v] for k, v in self.val_metrics.items()}
             save_dir = os.path.join(self.workspace, 'results', self.name)
@@ -214,13 +214,6 @@ class Trainer(object):
 
             if self.epoch % self.eval_interval == 0 or self.epoch == self.max_epochs:
                 self.pred_latest = self.evaluate_one_epoch(valid_loader)
-
-            # Save image every 10th epoch
-            if self.hparams.record_training and (epoch % self.save_images_interval == 0 or epoch == self.max_epochs):
-                save_dir = os.path.join(self.workspace, 'training', f'{self.name}_{epoch}_{self.global_step}')
-                os.makedirs(os.path.dirname(save_dir), exist_ok=True)
-                save_fn = f'{save_dir}.png'
-                iio.imwrite(save_fn, (self.pred_latest.clip(self.hparams.vmin, self.hparams.vmax).detach().cpu().numpy() * 255).astype(np.uint8))
 
         if self.local_rank == 0:
             pbar.close()
@@ -275,14 +268,26 @@ class Trainer(object):
                 loss_avg = total_loss/self.local_step
 
                 # Save preds during training
-                if self.hparams.record_training:
+                if self.hparams.record_training or self.save_intermediary_images:
                     pred_latest = self.evaluate_one_epoch(valid_loader, val_metric_list=['psnr', 'mae', 'mse', 'ssim_ski', 'lpips_alex'], full=False)
                     for k, v in self.val_metrics.items():
                         self.val_metrics_proc[k].append(v)
-                    if (self.global_step % 10 == 0 or self.global_step == self.max_steps):
+                    if self.save_intermediary_images:
+                        # print("save_intermediary_images: ", self.save_intermediary_images)
+                        # print("epoch: ", self.epoch)
+                        # print("save_images_interval: ", self.save_images_interval)
+                        if self.save_intermediary_images and (self.epoch % self.save_images_interval == 0 or self.epoch == self.max_epochs):
+                            save_dir = os.path.join(self.workspace, 'training', f'{self.name}_{epoch}_{self.global_step}')
+                            print("save_dir: ", save_dir)
+                            os.makedirs(os.path.dirname(save_dir), exist_ok=True)
+                            save_fn = f'{save_dir}.png'
+                            iio.imwrite(save_fn, (self.pred_latest.clip(self.hparams.vmin, self.hparams.vmax).detach().cpu().numpy() * 255).astype(np.uint8))
+                    elif (self.global_step % 10 == 0 or self.global_step == self.max_steps):
                         save_dir = os.path.join(self.workspace, 'results', self.name)
                         save_fn = os.path.join(save_dir, f'step_{str(self.global_step).zfill(6)}')
                         iio.imwrite(f'{save_fn}.png', (pred_latest.clip(self.hparams.vmin, self.hparams.vmax).detach().cpu().numpy() * 255).astype(np.uint8))
+                
+                    
 
                 if self.log_train and ((self.global_step - 1) % 10 == 0 or self.local_step == 1 or self.global_step == self.max_steps):
                     self.train_metrics = self.compute_metrics(

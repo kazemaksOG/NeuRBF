@@ -37,7 +37,7 @@ if config.alias is None:
 
 # Saving intermediary images  
 config.save_intermediary_images = True
-config.save_images_interval = 50
+config.save_images_interval = 20
 
 config.task = 'image'
 config.workspace = f'log/img'
@@ -46,7 +46,7 @@ config.seed = None
 config.cfactor = 128
 config.train_shuffle_mode = 2
 config.train_num_samples = 2**18
-config.record_training = False
+config.record_training = True
 
 config.pe_lc0_freq = [1e1, 1e2]
 config.pe_lc0_rbf_freq = [2**-3, 2**12]
