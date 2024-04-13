@@ -35,7 +35,7 @@ import util_clustering
 import util_network
 
 
-act_dict = {'none': 0, 'relu': 1, 'sine': 2, 'gauss': 3}
+act_dict = {'none': 0, 'relu': 1, 'sine': 2, 'gauss': 3, 'sigmoid': 4, 'tanh': 5, 'softmax': 6, 'leaky_relu': 7}
 
 
 class IMGNetwork(nn.Module):
@@ -560,12 +560,23 @@ class rbf(nn.Module):
         out = out + self.lcb0[None]
 
         h = out
+        # act_dict = {'none': 0, 'relu': 1, 'sine': 2, 'gauss': 3, 'sigmoid': 4, 'tanh': 5, 'softmax': 6, 'leaky_relu': 7}
         if self.lc_act == 0:
             pass
         elif self.lc_act == 1:
             h = F.relu(h, inplace=True)
         elif self.lc_act == 2:
             h = util_network.scaledsin_activation(h, self.a0[None])
+        elif self.lc_act == 3:
+            raise NotImplementedError
+        elif self.lc_act == 4:
+            h = F.sigmoid(h)
+        elif self.lc_act == 5:
+            h = F.tanh(h)
+        elif self.lc_act == 6:
+            h = F.softmax(h)
+        elif self.lc_act == 7:
+            h = F.leaky_relu(h, negative_slope=0.1, inplace=True)
         else:
             raise NotImplementedError
 
