@@ -83,6 +83,10 @@ class Trainer(object):
         if not self.log_train: self.use_tensorboardX = False
         self.t_train = 0
 
+
+        # added for collecting PSNR values per training cycle
+        self.psnr = []
+
         model.to(self.device)
         if self.world_size > 1:
             raise NotImplementedError
@@ -287,6 +291,9 @@ class Trainer(object):
                 
                 pbar.set_description(f"Epoch {self.epoch}/{self.max_epochs} training: loss={loss_val:.6f} ({loss_avg:.6f}), {metrics_str}, lr_dec={self.optims['dec'].param_groups[0]['lr']:.6f}")
                 pbar.update(1)
+
+            # add psnr 
+            self.psnr.append(tuple((self.global_step, self.train_metrics['psnr'])))
 
         if not self.scheduler_update_every_step:
             raise NotImplementedError

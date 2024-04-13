@@ -4,6 +4,7 @@ data/*
 data
 init_data*/*
 *temp*
+results/
 
 thirdparty/torch_ngp/*/*.egg-info/
 thirdparty/torch_ngp/*/build/
