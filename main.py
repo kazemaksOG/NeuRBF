@@ -226,6 +226,9 @@ def main(opt):
     with open(f'{save_fn}.txt', 'w') as f:
         pprint.pprint(stats, f, sort_dicts=False)
 
+    with open(f'{save_fn}_psnr.txt', 'wb') as f:
+        np.save(f, np.array(trainer.psnr))
+
     if opt.save_pred:
         if opt.task == 'image':
             trainer.save_img(trainer.pred_latest, f'{save_fn}.png')
